@@ -162,8 +162,9 @@ while running:
     explosion_group.update()
 
     if time_elapsed >= 500:
+        chosen_enemy = random.choice(list(all_enemies))
 # need way of selecting random enemy sprite out of group
-        enemybullet = Enemy_Bullet(enemy.rect.centerx, enemy.rect.bottom)
+        enemybullet = Enemy_Bullet(chosen_enemy.rect.centerx, chosen_enemy.rect.bottom)
         all_sprites.add(enemybullet)
         time_elapsed = 0
 
