@@ -17,16 +17,10 @@ time_elapsed = 0
 pygame.display.set_caption("Space Invaders")
 
 # Game Pieces
-# spaceship = pygame.image.load(f"img/spaceship.png")
 spaceshipX = 400
 spaceshipY = 500
 enemy_num = 15
-# enemy1X_change = 2
-# bullet = pygame.image.load(f"img/bullet.png")
-# bulletX = spaceshipX    
-# bulletY = spaceshipY - 25
-# bulletY_change = 10
-# bullet_state = "ready"
+
 enemy_state = "alive"
 player_state = "alive"
 enemy_font = pygame.font.SysFont("Impact", 60)
@@ -123,6 +117,8 @@ all_sprites = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
 all_enemies = pygame.sprite.Group()
 explosion_group = pygame.sprite.Group()
+enemy_bullets = pygame.sprite.Group()
+
 
 for j in range(1, enemy_num+1):
     enemyX = random.randint(0, 536)
@@ -163,9 +159,9 @@ while running:
 
     if time_elapsed >= 500 and len(all_enemies) > 0:
         chosen_enemy = random.choice(all_enemies.sprites())
-# need way of selecting random enemy sprite out of group
         enemybullet = Enemy_Bullet(chosen_enemy.rect.centerx, chosen_enemy.rect.bottom)
         all_sprites.add(enemybullet)
+        enemy_bullets.add(enemybullet)
         time_elapsed = 0
 
     for event in pygame.event.get():
@@ -183,7 +179,7 @@ while running:
             pygame.quit()
 
     s_e_collision = pygame.sprite.spritecollide(spaceship, all_enemies, False)
-    # print(collision)e
+    # print(collision)
     for enemy in s_e_collision:
         explosion = Explosion(spaceship.rect.centerx, spaceship.rect.centery)
         if spaceship in all_sprites:
@@ -192,18 +188,24 @@ while running:
         spaceship.kill()
         all_sprites.remove(spaceship)
         player_state = "dead"
-        # print("enemy", enemy)
-        # print("spaceship", spaceship)
         
     b_e_collision = pygame.sprite.groupcollide(bullets, all_enemies, True, True)
-    # print(b_e_collide)
     for enemy in b_e_collision:
         explosion = Explosion(enemy.rect.centerx, enemy.rect.centery)
         explosion_group.add(explosion)
     if len(all_enemies) == 0:
         enemy_state = "dead"
- 
-    pygame.display.update()
 
+    eb_s_collision = pygame.sprite.spritecollide(spaceship, enemy_bullets, True)
+    # print(spaceship)
+    for enemybullet in eb_s_collision:
+        explosion = Explosion(spaceship.rect.centerx, spaceship.rect.centery)
+        if spaceship in all_sprites:
+            explosion_group.add(explosion)
+        spaceship.kill()
+        all_sprites.remove(spaceship)
+        player_state = "dead"
+
+    pygame.display.update()
 
     
