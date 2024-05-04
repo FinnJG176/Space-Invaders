@@ -21,6 +21,7 @@ spaceshipX = 400
 spaceshipY = 500
 enemy_num = 15
 
+bullet_sound = pygame.mixer.Sound(f"snd/SI #1.mp3")
 enemy_state = "alive"
 player_state = "alive"
 enemy_font = pygame.font.SysFont("Impact", 60)
@@ -170,9 +171,11 @@ while running:
         elif player_state == "alive":
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
+                    bullet_sound.play()
                     bullet = Bullet(spaceship.rect.centerx, spaceship.rect.top)
                     all_sprites.add(bullet)
                     bullets.add(bullet)
+
 
     if player_state == "dead" or enemy_state == "dead":
         if keys[pygame.K_ESCAPE]:
