@@ -1,37 +1,16 @@
 import pygame
 import random
 from time import *
+import asyncio
 
-# from pygame.sprite import _Group, Group
-print("launch.app.python")
-print("initializing.pygame")
-
+print("applaunch.git.python.pygame")
 # Initalize Game
 pygame.init()
-clock = pygame.time.Clock()
-fps = 60
+
 screen = pygame.display.set_mode((800, 600))
-time_elapsed = 0
 
 # Game Title
 pygame.display.set_caption("Space Invaders")
-
-# Game Pieces
-spaceshipX = 400
-spaceshipY = 500
-enemy_num = 15
-bullet_sound = pygame.mixer.Sound(f"snd/SI #1.mp3")
-music = pygame.mixer.music.load(f"snd/Music.mp3")
-pygame.mixer.music.play(-1)
-enemy_state = "alive"
-player_state = "alive"
-enemy_font = pygame.font.SysFont("Impact", 60)
-player_font = pygame.font.SysFont("Zapfino", 36)
-player_font2 = pygame.font.SysFont("Comic Sans", 20)
-score_font = pygame.font.SysFont("Verdana", 20)
-score = 0
-text = score_font.render("Score: " + str(score), True, (247, 247, 247))
-screen.blit(text, (625, 20))
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -49,7 +28,7 @@ class Enemy_Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(f"img/bullet.png")
-        # Figure out way to change color
+
         self.rect = self.image.get_rect()
         self.rect.center = [x, y]
         self.speed = 5
@@ -117,106 +96,127 @@ class Explosion(pygame.sprite.Sprite):
         if self.index >= len(self.images) - 1 and self.counter >= explosion_speed:
             self.kill()
 
-# create groups
-spaceship = Player(spaceshipX, spaceshipY)
-all_sprites = pygame.sprite.Group()
-bullets = pygame.sprite.Group()
-all_enemies = pygame.sprite.Group()
-explosion_group = pygame.sprite.Group()
-enemy_bullets = pygame.sprite.Group()
+spaceshipX = 400
+spaceshipY = 500
+enemy_num = 15
 
 
-for j in range(1, enemy_num+1):
-    enemyX = random.randint(0, 536)
-    enemyY = random.randint(30, 350)
-    enemy = Enemy(enemyX, enemyY)
-    all_enemies.add(enemy)
-    all_sprites.add(enemy)
+# Game Loop
+async def main(): 
 
-all_sprites.add(spaceship)
+    
+    clock = pygame.time.Clock()
+    fps = 60
+    spaceship = Player(spaceshipX, spaceshipY)
+    all_sprites = pygame.sprite.Group()
+    bullets = pygame.sprite.Group()
+    all_enemies = pygame.sprite.Group()
+    explosion_group = pygame.sprite.Group()
+    enemy_bullets = pygame.sprite.Group()
+    for j in range(1, enemy_num+1):
+        enemyX = random.randint(0, 536)
+        enemyY = random.randint(30, 350)
+        enemy = Enemy(enemyX, enemyY)
+        all_enemies.add(enemy)
+        all_sprites.add(enemy)
+    all_sprites.add(spaceship)
 
-running = True
+    running = True
+    time_elapsed = 0
 
-# Game Loop 
-while running:
-    dt = clock.tick(fps)
-    time_elapsed += dt
-    keys = pygame.key.get_pressed()   
-    if player_state == 'dead':
-        screen.fill((217, 21, 17))
-        text = enemy_font.render('Enemy Wins', True, (0,0,0))
-        text2 = enemy_font.render('Press esc to exit', True, (0,0,0))
-        screen.blit(text, (300, 300))
-        screen.blit(text2, (330, 375))
-    elif enemy_state == "alive":
-        screen.fill((34, 59, 199)) 
-    elif enemy_state == "dead":
-        screen.fill((69, 237, 100))
-        text = player_font.render('You Win!', True, (175, 181, 53))
-        text2 = player_font2.render('Press esc to exit', True, (175, 181, 53))
-        screen.blit(text, (300, 300))
-        screen.blit(text2, (330, 375))
+    enemy_state = "alive"
+    player_state = "alive"
+    enemy_font = pygame.font.SysFont("Impact", 60)
+    player_font = pygame.font.SysFont("Zapfino", 36)
+    player_font2 = pygame.font.SysFont("Comic Sans", 20)
+    score_font = pygame.font.SysFont("Verdana", 20)
+    score = 0
+    bullet_sound = pygame.mixer.Sound(f"snd/SI #1.mp3")
+    music = pygame.mixer.music.load(f"snd/Music.mp3")
+    pygame.mixer.music.play(-1)
     text = score_font.render("Score: " + str(score), True, (247, 247, 247))
     screen.blit(text, (625, 20))
     
-    all_sprites.update()
-    all_sprites.draw(screen)
-    
-    explosion_group.draw(screen)
-    explosion_group.update()
-
-    if time_elapsed >= 500 and len(all_enemies) > 0:
-        chosen_enemy = random.choice(all_enemies.sprites())
-        enemybullet = Enemy_Bullet(chosen_enemy.rect.centerx, chosen_enemy.rect.bottom)
-        all_sprites.add(enemybullet)
-        enemy_bullets.add(enemybullet)
-        time_elapsed = 0
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif player_state == "alive":
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    bullet_sound.play()
-                    bullet = Bullet(spaceship.rect.centerx, spaceship.rect.top)
-                    all_sprites.add(bullet)
-                    bullets.add(bullet)
-
-
-    if player_state == "dead" or enemy_state == "dead":
-        if keys[pygame.K_ESCAPE]:
-            pygame.quit()
-
-    s_e_collision = pygame.sprite.spritecollide(spaceship, all_enemies, False)
-    # print(collision)
-    for enemy in s_e_collision:
-        explosion = Explosion(spaceship.rect.centerx, spaceship.rect.centery)
-        if spaceship in all_sprites:
-            # all_sprites.add(explosion)
-            explosion_group.add(explosion)
-        spaceship.kill()
-        all_sprites.remove(spaceship)
-        player_state = "dead"
+    while running:
+        dt = clock.tick(fps)
+        time_elapsed += dt
+        keys = pygame.key.get_pressed()   
+        if player_state == 'dead':
+            screen.fill((217, 21, 17))
+            text = enemy_font.render('Enemy Wins', True, (0,0,0))
+            text2 = enemy_font.render('Press esc to exit', True, (0,0,0))
+            screen.blit(text, (300, 300))
+            screen.blit(text2, (330, 375))
+        elif enemy_state == "alive":
+            screen.fill((34, 59, 199)) 
+        elif enemy_state == "dead":
+            screen.fill((69, 237, 100))
+            text = player_font.render('You Win!', True, (175, 181, 53))
+            text2 = player_font2.render('Press esc to exit', True, (175, 181, 53))
+            screen.blit(text, (300, 300))
+            screen.blit(text2, (330, 375))
+        text = score_font.render("Score: " + str(score), True, (247, 247, 247))
+        screen.blit(text, (625, 20))
         
-    b_e_collision = pygame.sprite.groupcollide(bullets, all_enemies, True, True)
-    for enemy in b_e_collision:
-        explosion = Explosion(enemy.rect.centerx, enemy.rect.centery)
-        explosion_group.add(explosion)
-        score += 100
-    if len(all_enemies) == 0:
-        enemy_state = "dead"
+        all_sprites.update()
+        all_sprites.draw(screen)
+        
+        explosion_group.draw(screen)
+        explosion_group.update()
 
-    eb_s_collision = pygame.sprite.spritecollide(spaceship, enemy_bullets, True)
-    # print(spaceship)
-    for enemybullet in eb_s_collision:
-        explosion = Explosion(spaceship.rect.centerx, spaceship.rect.centery)
-        if spaceship in all_sprites:
+        if time_elapsed >= 500 and len(all_enemies) > 0:
+            chosen_enemy = random.choice(all_enemies.sprites())
+            enemybullet = Enemy_Bullet(chosen_enemy.rect.centerx, chosen_enemy.rect.bottom)
+            all_sprites.add(enemybullet)
+            enemy_bullets.add(enemybullet)
+            time_elapsed = 0
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif player_state == "alive":
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        bullet_sound.play()
+                        bullet = Bullet(spaceship.rect.centerx, spaceship.rect.top)
+                        all_sprites.add(bullet)
+                        bullets.add(bullet)
+
+
+        if player_state == "dead" or enemy_state == "dead":
+            if keys[pygame.K_ESCAPE]:
+                pygame.quit()
+
+        s_e_collision = pygame.sprite.spritecollide(spaceship, all_enemies, False)
+
+        for enemy in s_e_collision:
+            explosion = Explosion(spaceship.rect.centerx, spaceship.rect.centery)
+            if spaceship in all_sprites:
+
+                explosion_group.add(explosion)
+            spaceship.kill()
+            all_sprites.remove(spaceship)
+            player_state = "dead"
+            
+        b_e_collision = pygame.sprite.groupcollide(bullets, all_enemies, True, True)
+        for enemy in b_e_collision:
+            explosion = Explosion(enemy.rect.centerx, enemy.rect.centery)
             explosion_group.add(explosion)
-        spaceship.kill()
-        all_sprites.remove(spaceship)
-        player_state = "dead"
+            score += 100
+        if len(all_enemies) == 0:
+            enemy_state = "dead"
 
-    pygame.display.update()
+        eb_s_collision = pygame.sprite.spritecollide(spaceship, enemy_bullets, True)
 
-    
+        for enemybullet in eb_s_collision:
+            explosion = Explosion(spaceship.rect.centerx, spaceship.rect.centery)
+            if spaceship in all_sprites:
+                explosion_group.add(explosion)
+            spaceship.kill()
+            all_sprites.remove(spaceship)
+            player_state = "dead"
+
+        pygame.display.update()
+        await asyncio.sleep(0)
+
+asyncio.run(main()) 
