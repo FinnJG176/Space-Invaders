@@ -20,15 +20,18 @@ pygame.display.set_caption("Space Invaders")
 spaceshipX = 400
 spaceshipY = 500
 enemy_num = 15
-
 bullet_sound = pygame.mixer.Sound(f"snd/SI #1.mp3")
-music = pygame.mixer.music.load(f"snd/Test music.mp3")
+music = pygame.mixer.music.load(f"snd/Music.mp3")
 pygame.mixer.music.play(-1)
 enemy_state = "alive"
 player_state = "alive"
 enemy_font = pygame.font.SysFont("Impact", 60)
 player_font = pygame.font.SysFont("Zapfino", 36)
 player_font2 = pygame.font.SysFont("Comic Sans", 20)
+score_font = pygame.font.SysFont("Verdana", 20)
+score = 0
+text = score_font.render("Score: " + str(score), True, (247, 247, 247))
+screen.blit(text, (625, 20))
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -153,6 +156,8 @@ while running:
         text2 = player_font2.render('Press esc to exit', True, (175, 181, 53))
         screen.blit(text, (300, 300))
         screen.blit(text2, (330, 375))
+    text = score_font.render("Score: " + str(score), True, (247, 247, 247))
+    screen.blit(text, (625, 20))
     
     all_sprites.update()
     all_sprites.draw(screen)
@@ -198,6 +203,7 @@ while running:
     for enemy in b_e_collision:
         explosion = Explosion(enemy.rect.centerx, enemy.rect.centery)
         explosion_group.add(explosion)
+        score += 100
     if len(all_enemies) == 0:
         enemy_state = "dead"
 
