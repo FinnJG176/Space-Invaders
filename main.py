@@ -22,6 +22,8 @@ spaceshipY = 500
 enemy_num = 15
 
 bullet_sound = pygame.mixer.Sound(f"snd/SI #1.mp3")
+music = pygame.mixer.music.load(f"snd/Test music.mp3")
+pygame.mixer.music.play(-1)
 enemy_state = "alive"
 player_state = "alive"
 enemy_font = pygame.font.SysFont("Impact", 60)
