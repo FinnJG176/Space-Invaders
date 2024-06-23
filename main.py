@@ -4,6 +4,7 @@ from time import *
 import asyncio
 
 print("applaunch.git.python.pygame")
+
 # Initalize Game
 pygame.init()
 
@@ -43,10 +44,12 @@ class Enemy(pygame.sprite.Sprite):
         self.image = pygame.image.load(f"img/ufo-2.png")
         self.rect = self.image.get_rect()
         self.rect.center = [x, y]
+        self.speed = 2
     def update(self):
-        self.rect.move_ip(2, 0)
+        self.rect.move_ip(self.speed, 0)
         if self.rect.left >= 800:
             self.rect.right = 0
+            self.rect.bottom += 10
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -103,8 +106,6 @@ enemy_num = 15
 
 # Game Loop
 async def main(): 
-
-    
     clock = pygame.time.Clock()
     fps = 60
     spaceship = Player(spaceshipX, spaceshipY)
@@ -117,6 +118,7 @@ async def main():
         enemyX = random.randint(0, 536)
         enemyY = random.randint(30, 350)
         enemy = Enemy(enemyX, enemyY)
+        enemy.speed = 2
         all_enemies.add(enemy)
         all_sprites.add(enemy)
     all_sprites.add(spaceship)
@@ -130,12 +132,14 @@ async def main():
     player_font = pygame.font.SysFont("Zapfino", 36)
     player_font2 = pygame.font.SysFont("Comic Sans", 20)
     score_font = pygame.font.SysFont("Verdana", 20)
+    objective_font = pygame.font.SysFont("Marker Felt", 15)
     score = 0
     bullet_sound = pygame.mixer.Sound(f"snd/SI #1.mp3")
     music = pygame.mixer.music.load(f"snd/Music.mp3")
     pygame.mixer.music.play(-1)
     text = score_font.render("Score: " + str(score), True, (247, 247, 247))
     screen.blit(text, (625, 20))
+    objtext = objective_font.render("Achieve a score of 1000 to get a Tech Round!", True, (247, 247, 247))
     
     while running:
         dt = clock.tick(fps)
@@ -148,29 +152,36 @@ async def main():
             screen.blit(text, (300, 300))
             screen.blit(text2, (330, 375))
         elif enemy_state == "alive":
-            screen.fill((34, 59, 199)) 
+            screen.fill((34, 59, 199))
+
         elif enemy_state == "dead":
             screen.fill((69, 237, 100))
             text = player_font.render('You Win!', True, (175, 181, 53))
             text2 = player_font2.render('Press esc to exit', True, (175, 181, 53))
             screen.blit(text, (300, 300))
-            screen.blit(text2, (330, 375))
+            screen.blit(text2, (330, 375)) 
+        screen.blit(objtext, (300, 25))
+        if score >= 1000:
+            objtext = objective_font.render("TECH ROUND", True, (247, 247, 247))
+            screen.blit(objtext, (300, 25))
+            enemy.speed = 4
         text = score_font.render("Score: " + str(score), True, (247, 247, 247))
         screen.blit(text, (625, 20))
-        
+
+
         all_sprites.update()
         all_sprites.draw(screen)
         
         explosion_group.draw(screen)
         explosion_group.update()
 
-        if time_elapsed >= 500 and len(all_enemies) > 0:
+        if time_elapsed >= 1000 and len(all_enemies) > 0:
             chosen_enemy = random.choice(all_enemies.sprites())
             enemybullet = Enemy_Bullet(chosen_enemy.rect.centerx, chosen_enemy.rect.bottom)
             all_sprites.add(enemybullet)
             enemy_bullets.add(enemybullet)
             time_elapsed = 0
-
+ 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
