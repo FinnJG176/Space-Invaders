@@ -2,20 +2,28 @@ import pygame
 import random
 from time import *
 import asyncio
-
 print("applaunch.git.python.pygame")
+
+#Constants
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+
+# Colors
+WHITE = (255, 255, 255)
 
 # Initalize Game
 pygame.init()
 
-screen = pygame.display.set_mode((800, 600))
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Game Title
 pygame.display.set_caption("Space Invaders")
 
+
+
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
-        pygame.sprite.Sprite.__init__(self)
+        super().__init__()
         self.image = pygame.image.load(f"img/bullet.png")
         self.rect = self.image.get_rect()
         self.rect.center = [x, y]
@@ -26,7 +34,7 @@ class Bullet(pygame.sprite.Sprite):
             self.kill()
 
 class Enemy_Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+        super().__init__()
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(f"img/bullet.png")
 
@@ -35,25 +43,25 @@ class Enemy_Bullet(pygame.sprite.Sprite):
         self.speed = 5
     def update(self):
         self.rect.y += self.speed
-        if self.rect.top > 600:
+        if self.rect.top > SCREEN_HEIGHT:
             self.kill()
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y):
-        pygame.sprite.Sprite.__init__(self)
+        super().__init__()
         self.image = pygame.image.load(f"img/ufo-2.png")
         self.rect = self.image.get_rect()
         self.rect.center = [x, y]
         self.speed = enemy_speed
     def update(self):
         self.rect.move_ip(self.speed, 0)
-        if self.rect.left >= 800:
+        if self.rect.left >= SCREEN_WIDTH:
             self.rect.right = 0
             self.rect.bottom += 10
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
-        pygame.sprite.Sprite.__init__(self)
+        super().__init__()
         self.image = pygame.image.load(f"img/spaceship.png")
         self.rect = self.image.get_rect()
         self.rect.center = [x, y]
@@ -68,17 +76,12 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_e]:
             self.rect.top -= 2
         if keys[pygame.K_d]:
-            self.rect.top += 2 
-        if self.rect.left < 0:
-            self.rect.left = 0
-        if self.rect.top< 0:
-            self.rect.top = 0
-        if self.rect.left > 736:
-            self.rect.left = 736
+            self.rect.top += 2
+        self.rect.clamp_ip(pygame.Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT))
 
 class Explosion(pygame.sprite.Sprite):
     def __init__(self, x, y):
-        pygame.sprite.Sprite.__init__(self)
+        super().__init__()
         self.images = []
         for num in range(1, 6):
             img = pygame.image.load(f"img/exp{num}.png")
