@@ -19,7 +19,7 @@ class Bullet(pygame.sprite.Sprite):
         self.image = pygame.image.load(f"img/bullet.png")
         self.rect = self.image.get_rect()
         self.rect.center = [x, y]
-        self.speed = 5
+        self.speed = bullet_speed
     def update(self):
         self.rect.y -= self.speed
         if self.rect.top < -32:
@@ -44,7 +44,7 @@ class Enemy(pygame.sprite.Sprite):
         self.image = pygame.image.load(f"img/ufo-2.png")
         self.rect = self.image.get_rect()
         self.rect.center = [x, y]
-        self.speed = 2
+        self.speed = enemy_speed
     def update(self):
         self.rect.move_ip(self.speed, 0)
         if self.rect.left >= 800:
@@ -99,13 +99,33 @@ class Explosion(pygame.sprite.Sprite):
         if self.index >= len(self.images) - 1 and self.counter >= explosion_speed:
             self.kill()
 
+def tech_support(sender_email, sender_password, receiver_email, subject,
+                 message):
+  msg = MIMEMultipart()
+  msg['From'] = sender_email
+  msg['To'] = receiver_email
+  msg['Subject'] = subject
+  msg.attach(MIMEText(str(message), 'plain'))
+  try:
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(sender_email, sender_password)
+    server.send_message(msg)
+    server.quit()
+    print("Email sent successfully!")
+  except Exception as e:
+    print("An error occurred while sending the email. Error code " + e)
+
 spaceshipX = 400
 spaceshipY = 500
 enemy_num = 15
+enemy_speed = 2
+bullet_speed = 5
 
 
 # Game Loop
-async def main(): 
+async def main():
+    global enemy_speed, bullet_speed
     clock = pygame.time.Clock()
     fps = 60
     spaceship = Player(spaceshipX, spaceshipY)
@@ -118,7 +138,7 @@ async def main():
         enemyX = random.randint(0, 536)
         enemyY = random.randint(30, 350)
         enemy = Enemy(enemyX, enemyY)
-        enemy.speed = 2
+        enemy.speed = enemy_speed
         all_enemies.add(enemy)
         all_sprites.add(enemy)
     all_sprites.add(spaceship)
@@ -128,11 +148,13 @@ async def main():
 
     enemy_state = "alive"
     player_state = "alive"
+    tech_round = False
     enemy_font = pygame.font.SysFont("Impact", 60)
     player_font = pygame.font.SysFont("Zapfino", 36)
     player_font2 = pygame.font.SysFont("Comic Sans", 20)
     score_font = pygame.font.SysFont("Verdana", 20)
     objective_font = pygame.font.SysFont("Marker Felt", 15)
+    feedback_font = pygame.font.SysFont("Copperplate", 30)
     score = 0
     bullet_sound = pygame.mixer.Sound(f"snd/SI #1.mp3")
     music = pygame.mixer.music.load(f"snd/Music.mp3")
@@ -140,8 +162,11 @@ async def main():
     text = score_font.render("Score: " + str(score), True, (247, 247, 247))
     screen.blit(text, (625, 20))
     objtext = objective_font.render("Achieve a score of 1000 to get a Tech Round!", True, (247, 247, 247))
-    
+    feedbutton = pygame.Rect(50, 50, 300, 50)
+    feedcolor = (190, 141, 217)
+
     while running:
+
         dt = clock.tick(fps)
         time_elapsed += dt
         keys = pygame.key.get_pressed()   
@@ -151,6 +176,9 @@ async def main():
             text2 = enemy_font.render('Press esc to exit', True, (0,0,0))
             screen.blit(text, (300, 300))
             screen.blit(text2, (330, 375))
+            pygame.draw.rect(screen, feedcolor, feedbutton)
+            text3 = feedback_font.render('Leave us feedback!', True, (255,255, 255))
+            screen.blit(text3, (55, 55))
         elif enemy_state == "alive":
             screen.fill((34, 59, 199))
 
@@ -160,14 +188,20 @@ async def main():
             text2 = player_font2.render('Press esc to exit', True, (175, 181, 53))
             screen.blit(text, (300, 300))
             screen.blit(text2, (330, 375)) 
+            pygame.draw.rect(screen, feedcolor, feedbutton)
+            text3 = feedback_font.render('Leave us feedback!', True, (255,255, 255))
+            screen.blit(text3, (55, 55))
         screen.blit(objtext, (300, 25))
-        if score >= 1000:
+        if score >= 1000 and tech_round == False:
+            tech_round = True
             objtext = objective_font.render("TECH ROUND", True, (247, 247, 247))
             screen.blit(objtext, (300, 25))
-            enemy.speed = 4
+            enemy_speed += 5
+            bullet_speed += 10
+            for enemy in all_enemies:
+                enemy.speed = enemy_speed
         text = score_font.render("Score: " + str(score), True, (247, 247, 247))
         screen.blit(text, (625, 20))
-
 
         all_sprites.update()
         all_sprites.draw(screen)
@@ -229,5 +263,5 @@ async def main():
 
         pygame.display.update()
         await asyncio.sleep(0)
-
+            
 asyncio.run(main()) 
