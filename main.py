@@ -2,6 +2,11 @@ import pygame
 import random
 from time import *
 import asyncio
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+# Initalize Game
+pygame.init()
 print("applaunch.git.python.pygame")
 
 # Constants
@@ -17,15 +22,22 @@ YOULOSESF = (217, 21, 17)
 NORMSF = (34, 59, 199)
 FEEDCOLOR = (190, 141, 217)
 
-# Initalize Game
-pygame.init()
+# Fonts
+ENEMY_FONT = pygame.font.SysFont("Impact", 60)
+PLAYER_FONT = pygame.font.SysFont("Zapfino", 36)
+PLAYER_FONT2 = pygame.font.SysFont("Comic Sans", 20)
+SCORE_FONT = pygame.font.SysFont("Verdana", 20)
+OBJECTIVE_FONT = pygame.font.SysFont("Marker Felt", 15)
+FEEDBACK_FONT = pygame.font.SysFont("Copperplate", 30)
+FEEDMESSAGE_FONT = pygame.font.SysFont("Arial", 16)
 
+# Initialize screen
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Game Title
 pygame.display.set_caption("Space Invaders")
 
-
+# Create classes
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
@@ -107,12 +119,12 @@ class Explosion(pygame.sprite.Sprite):
             self.image = self.images[self.index]
         if self.index >= len(self.images) - 1 and self.counter >= explosion_speed:
             self.kill()
-def feedback():
-    feedbutton = pygame.Rect(50, 50, 300, 50)
-    feedback_font = pygame.font.SysFont("Copperplate", 30)
+
+def feedback(feedbutton):
     pygame.draw.rect(screen, FEEDCOLOR, feedbutton)
-    text3 = feedback_font.render('Leave us feedback!', True, WHITE)
+    text3 = FEEDBACK_FONT.render('Leave us feedback!', True, WHITE)
     screen.blit(text3, (55, 55))
+    
 
 def feedbacksend(sender_email, sender_password, receiver_email, subject,
                  message):
@@ -138,10 +150,11 @@ spaceshipY = 500
 enemy_num = 15
 enemy_speed = 2
 bullet_speed = 5
+message = ""
 
 # Game Loop
 async def main():
-    global enemy_speed, bullet_speed
+    global enemy_speed, bullet_speed,feedbutton, message
     clock = pygame.time.Clock()
     fps = 60
     spaceship = Player(spaceshipX, spaceshipY)
@@ -166,19 +179,15 @@ async def main():
     player_state = "alive"
     tech_round = False
     feedback_mode = False
-    enemy_font = pygame.font.SysFont("Impact", 60)
-    player_font = pygame.font.SysFont("Zapfino", 36)
-    player_font2 = pygame.font.SysFont("Comic Sans", 20)
-    score_font = pygame.font.SysFont("Verdana", 20)
-    objective_font = pygame.font.SysFont("Marker Felt", 15)
     score = 0
     bullet_sound = pygame.mixer.Sound(f"snd/SI #1.mp3")
-    music = pygame.mixer.music.load(f"snd/Music.mp3")
+    pygame.mixer.music.load(f"snd/Music.mp3")
     pygame.mixer.music.play(-1)
-    text = score_font.render("Score: " + str(score), True, WHITE)
+    text = SCORE_FONT.render("Score: " + str(score), True, WHITE)
     screen.blit(text, (625, 20))
-    objtext = objective_font.render("Achieve a score of 1000 to get a Tech Round!", True, WHITE)
-
+    objtext = OBJECTIVE_FONT.render("Achieve a score of 1000 to get a Tech Round!", True, WHITE)
+    feedbutton = pygame.Rect(50, 50, 300, 50)
+    
     while running:
 
         dt = clock.tick(fps)
@@ -186,30 +195,30 @@ async def main():
         keys = pygame.key.get_pressed()   
         if player_state == 'dead':
             screen.fill(YOULOSESF)
-            text = enemy_font.render('Enemy Wins', True, BLACK)
-            text2 = enemy_font.render('Press esc to exit', True, BLACK)
+            text = ENEMY_FONT.render('Enemy Wins', True, BLACK)
+            text2 = ENEMY_FONT.render('Press esc to exit', True, BLACK)
             screen.blit(text, (300, 300))
             screen.blit(text2, (330, 375))
-            feedback()
+            feedback(feedbutton)
         elif enemy_state == "alive":
             screen.fill(NORMSF)
         elif enemy_state == "dead":
             screen.fill(YOUWINSF)
-            text = player_font.render('You Win!', True, YOUWINTC)
-            text2 = player_font2.render('Press esc to exit', True, YOUWINTC)
+            text = PLAYER_FONT.render('You Win!', True, YOUWINTC)
+            text2 = PLAYER_FONT2.render('Press esc to exit', True, YOUWINTC)
             screen.blit(text, (300, 300))
             screen.blit(text2, (330, 375)) 
-            feedback( )
+            feedback(feedbutton)
         screen.blit(objtext, (300, 25))
         if score >= 1000 and tech_round == False:
             tech_round = True
-            objtext = objective_font.render("TECH ROUND", True, WHITE)
+            objtext = OBJECTIVE_FONT.render("TECH ROUND", True, WHITE)
             screen.blit(objtext, (300, 25))
             enemy_speed += 5
             bullet_speed += 10
             for enemy in all_enemies:
                 enemy.speed = enemy_speed
-        text = score_font.render("Score: " + str(score), True, WHITE)
+        text = SCORE_FONT.render("Score: " + str(score), True, WHITE)
         screen.blit(text, (625, 20))
 
         all_sprites.update()
@@ -235,6 +244,36 @@ async def main():
                         bullet = Bullet(spaceship.rect.centerx, spaceship.rect.top)
                         all_sprites.add(bullet)
                         bullets.add(bullet)
+            elif event.type == pygame.MOUSEBUTTONDOWN and feedbutton.collidepoint(event.pos) and feedback_mode == False:
+                feedback_mode = True
+                
+        if feedback_mode:
+            print("You are now in feedback mode. Look at Pygame display.")
+            pygame.mixer.music.fadeout(2000)
+            while feedback_mode:
+                for evt in pygame.event.get():
+                    if evt.type == pygame.KEYDOWN:
+                        if evt.unicode.isalpha():
+                            message += evt.unicode
+                        elif evt.key == pygame.K_BACKSPACE:
+                            message = message[:-1]
+                        elif evt.key == pygame.K_RETURN:
+                            message += "\n"
+                    elif evt.type == pygame.QUIT:
+                        feedback_mode = False
+                screen.fill((0, 0, 0))
+                block = FEEDMESSAGE_FONT.render(message, True, (255, 255, 255))
+                rect = block.get_rect()
+                rect.center = screen.get_rect().center
+                screen.blit(block, rect)
+                pygame.display.flip()
+
+            # feedback_submitted = 
+
+        # if feedback_submitted:
+        #     # send the email
+        #     pass
+
 
 
         if player_state == "dead" or enemy_state == "dead":
