@@ -12,6 +12,7 @@ print("applaunch.git.python.pygame")
 # Constants
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
+# SCREEN_CENTER = (SCREEN_WIDTH/2, SCREEN_HEIGHT/2 - 30)
 
 # Colors
 WHITE = (255, 255, 255)
@@ -253,18 +254,27 @@ async def main():
             while feedback_mode:
                 for evt in pygame.event.get():
                     if evt.type == pygame.KEYDOWN:
-                        if evt.unicode.isalpha():
-                            message += evt.unicode
-                        elif evt.key == pygame.K_BACKSPACE:
+                        # if evt.unicode.isalpha():
+                        message += evt.unicode
+                        if evt.key == pygame.K_BACKSPACE:
                             message = message[:-1]
                         elif evt.key == pygame.K_RETURN:
-                            message += "\n"
+                            pass
+                            #feedbacksend()
                     elif evt.type == pygame.QUIT:
                         feedback_mode = False
-                screen.fill((0, 0, 0))
-                block = FEEDMESSAGE_FONT.render(message, True, (255, 255, 255))
-                rect = block.get_rect()
-                rect.center = screen.get_rect().center
+
+                screen.fill(BLACK)
+
+                # Render the instruction text
+                instruction_text = "Enter your feedback. Press Enter to submit"
+                instruction_block = FEEDMESSAGE_FONT.render(instruction_text, True, WHITE)
+                instruction_rect = instruction_block.get_rect(center=(SCREEN_WIDTH/2,SCREEN_HEIGHT/2-30))
+                screen.blit(instruction_block, instruction_rect)
+                
+                # render the input text
+                block = FEEDMESSAGE_FONT.render(message, True, WHITE)
+                rect = block.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
                 screen.blit(block, rect)
                 pygame.display.flip()
 
