@@ -31,6 +31,7 @@ SCORE_FONT = pygame.font.SysFont("Verdana", 20)
 OBJECTIVE_FONT = pygame.font.SysFont("Marker Felt", 15)
 FEEDBACK_FONT = pygame.font.SysFont("Copperplate", 30)
 FEEDMESSAGE_FONT = pygame.font.SysFont("Arial", 16)
+FEEDINSTR_FONT = pygame.font.SysFont("Consolas", 16)
 
 # Initialize screen
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -249,36 +250,39 @@ async def main():
                 feedback_mode = True
                 
         if feedback_mode:
-            print("You are now in feedback mode. Look at Pygame display.")
+            for i in range(0, 100000):
+                print("You are now in feedback mode. Look at Pygame display.")
             pygame.mixer.music.fadeout(2000)
+        if feedback_mode:
             while feedback_mode:
                 for evt in pygame.event.get():
                     if evt.type == pygame.KEYDOWN:
-                        # if evt.unicode.isalpha():
-                        message += evt.unicode
+                        if evt.unicode:  # Capture all characters
+                            message += evt.unicode
                         if evt.key == pygame.K_BACKSPACE:
                             message = message[:-1]
                         elif evt.key == pygame.K_RETURN:
-                            pass
-                            #feedbacksend()
+                            # Call your feedback send function here
+                            feedbacksend(sender_email, sender_password, receiver_email, "Feedback", message)
+                            message = ""  # Clear message after sending
+                            feedback_mode = False  # Exit feedback mode
                     elif evt.type == pygame.QUIT:
                         feedback_mode = False
 
-                screen.fill(BLACK)
+        screen.fill(BLACK)
 
-                # Render the instruction text
-                instruction_text = "Enter your feedback. Press Enter to submit"
-                instruction_block = FEEDMESSAGE_FONT.render(instruction_text, True, WHITE)
-                instruction_rect = instruction_block.get_rect(center=(SCREEN_WIDTH/2,SCREEN_HEIGHT/2-30))
-                screen.blit(instruction_block, instruction_rect)
-                
-                # render the input text
-                block = FEEDMESSAGE_FONT.render(message, True, WHITE)
-                rect = block.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
-                screen.blit(block, rect)
-                pygame.display.flip()
+        # Render the instruction text
+        instruction_text = "Enter your feedback. Press Enter to submit"
+        instruction_block = FEEDINSTR_FONT.render(instruction_text, True, WHITE)
+        instruction_rect = instruction_block.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2 - 30))
+        screen.blit(instruction_block, instruction_rect)
 
-            # feedback_submitted = 
+        # Render the input text
+        block = FEEDMESSAGE_FONT.render(message, True, WHITE)
+        rect = block.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
+        screen.blit(block, rect)
+        pygame.display.flip()
+
 
         # if feedback_submitted:
         #     # send the email
@@ -323,4 +327,4 @@ async def main():
         pygame.display.update()
         await asyncio.sleep(0)
             
-asyncio.run(main()) 
+asyncio.run(main())
