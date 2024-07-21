@@ -1,7 +1,6 @@
 import pygame
 import random
 from time import *
-import asyncio
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smtplib
@@ -156,8 +155,9 @@ bullet_speed = 5
 message = ""
 
 # Game Loop
-async def main():
+def main():
     global enemy_speed, bullet_speed,feedbutton, message
+    pygame.init()
     clock = pygame.time.Clock()
     fps = 60
     spaceship = Player(spaceshipX, spaceshipY)
@@ -313,8 +313,7 @@ async def main():
             spaceship.kill()
             all_sprites.remove(spaceship)
             player_state = "dead"
+        pygame.display.flip()
 
-        pygame.display.update()
-        await asyncio.sleep(0)
-            
-asyncio.run(main())
+if __name__ == "__main__":
+    main()
