@@ -4,6 +4,7 @@ from time import *
 import asyncio
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import smtplib
 
 # Initalize Game
 pygame.init()
@@ -100,7 +101,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.clamp_ip(pygame.Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT))
 
 class Explosion(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y): 
         super().__init__()
         self.images = []
         for num in range(1, 6):
@@ -143,7 +144,7 @@ def feedbacksend(sender_email, sender_password, receiver_email, subject,
         server.quit()
         print("Email sent successfully!")
     except Exception as e:
-        print("An error occurred while sending the email. Error code " + e)
+        print("An error occurred while sending the email. Error code " + str(e))
 
 # Vars
 
@@ -246,49 +247,38 @@ async def main():
                         bullet = Bullet(spaceship.rect.centerx, spaceship.rect.top)
                         all_sprites.add(bullet)
                         bullets.add(bullet)
-            elif event.type == pygame.MOUSEBUTTONDOWN and feedbutton.collidepoint(event.pos) and feedback_mode == False:
+            if event.type == pygame.MOUSEBUTTONDOWN and feedbutton.collidepoint(event.pos) and feedback_mode == False:
                 feedback_mode = True
                 
         if feedback_mode:
-            for i in range(0, 100000):
-                print("You are now in feedback mode. Look at Pygame display.")
             pygame.mixer.music.fadeout(2000)
-        if feedback_mode:
             while feedback_mode:
                 for evt in pygame.event.get():
                     if evt.type == pygame.KEYDOWN:
-                        if evt.unicode:  # Capture all characters
-                            message += evt.unicode
                         if evt.key == pygame.K_BACKSPACE:
                             message = message[:-1]
                         elif evt.key == pygame.K_RETURN:
-                            # Call your feedback send function here
-                            feedbacksend(sender_email, sender_password, receiver_email, "Feedback", message)
+                            feedbacksend("goguesspython@gmail.com", "fsyp gmmp rarf xjwm", "goguesspython@gmail.com", "Space Invaders Feedback", message)
                             message = ""  # Clear message after sending
                             feedback_mode = False  # Exit feedback mode
+                        else:
+                            message += evt.unicode
                     elif evt.type == pygame.QUIT:
                         feedback_mode = False
 
-        screen.fill(BLACK)
+                screen.fill(BLACK)
 
-        # Render the instruction text
-        instruction_text = "Enter your feedback. Press Enter to submit"
-        instruction_block = FEEDINSTR_FONT.render(instruction_text, True, WHITE)
-        instruction_rect = instruction_block.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2 - 30))
-        screen.blit(instruction_block, instruction_rect)
+                # Render the instruction text
+                instruction_text = "Enter your feedback. Press Enter to submit"
+                instruction_block = FEEDINSTR_FONT.render(instruction_text, True, WHITE)
+                instruction_rect = instruction_block.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2 - 30))
+                screen.blit(instruction_block, instruction_rect)
 
-        # Render the input text
-        block = FEEDMESSAGE_FONT.render(message, True, WHITE)
-        rect = block.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
-        screen.blit(block, rect)
-        pygame.display.flip()
-
-
-        # if feedback_submitted:
-        #     # send the email
-        #     pass
-
-
+                # Render the input text
+                block = FEEDMESSAGE_FONT.render(message, True, WHITE)
+                rect = block.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
+                screen.blit(block, rect)
+                pygame.display.flip()
 
         if player_state == "dead" or enemy_state == "dead":
             if keys[pygame.K_ESCAPE]:
