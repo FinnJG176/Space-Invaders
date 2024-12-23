@@ -149,7 +149,7 @@ def feedbacksend(sender_email, sender_password, receiver_email, subject,
 
 spaceshipX = 400
 spaceshipY = 500
-enemy_num = 15
+enemy_num = 50
 enemy_speed = 2
 bullet_speed = 5
 message = ""
